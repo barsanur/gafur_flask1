@@ -1,8 +1,8 @@
 
 {
-    "word": "Breakfast",
+    "word": "Dinner",
     "isNoun": "1",
-    "category_id": "6"
+    "category_id": "A2"
 }
 
 {

@@ -171,8 +171,13 @@ class QuestionListByLevel(Resource):
     def get(self, level_id):
         try:
             with mysql.connect() as cursor:
-                sql = "SELECT * FROM words WHERE level='{}' ORDER BY RAND() LIMIT 3".format(level_id)
+                sql  = """SELECT words.word, examples.example, grammars.grammar, words.isNoun FROM words
+                INNER JOIN examples ON words.category_id = examples.category_id
+                INNER JOIN grammars ON grammars.category_id = examples.category_id
+                WHERE words.category_id='{}' ORDER BY RAND() LIMIT 1""".format(level_id)
+               
                 cursor.execute(sql)
+
                 return cursor.fetchall()
         except:
             return {"status": "Level error"}
@@ -215,18 +220,29 @@ class GrammarsByLevel(Resource):
                 return cursor.fetchall()
         except:
             return {"status": "Level error"}
+class CategoryList(Resource):
+    def get(self):
+        try:
+            with mysql.connect() as cursor:
+                
+                sql = "SELECT * FROM categories"
+                cursor.execute(sql)
+                return cursor.fetchall()
+        except:
+            return {"status": "Level error"}
 
 
 api.add_resource(WordsList, '/words')
 api.add_resource(ExampleList, '/examples')
 api.add_resource(GrammarList, '/grammars')
-api.add_resource(Word, '/word/<string:word_id>')
+api.add_resource(CategoryList, '/categories')
+api.add_resource(Word, '/words/<string:word_id>')
 api.add_resource(Example, '/example/<string:example_id>')
 api.add_resource(Grammar, '/grammar/<string:grammar_id>')
 api.add_resource(QuestionListByLevel, '/level/<string:level_id>')
-api.add_resource(WordsByLevel, '/words/level/<string:level_id>')
-api.add_resource(ExamplesByLevel, '/examples/level/<string:level_id>')
-api.add_resource(GrammarsByLevel, '/grammars/level/<string:level_id>')
+# api.add_resource(WordsByLevel, '/words/level/<string:level_id>')
+# api.add_resource(ExamplesByLevel, '/examples/level/<string:level_id>')
+# api.add_resource(GrammarsByLevel, '/grammars/level/<string:level_id>')
 
 
 
