@@ -182,63 +182,64 @@ class QuestionListByLevel(Resource):
         except:
             return {"status": "Level error"}
 
-class WordsByLevel(Resource):
-    def get(self, level_id):
-        try:
-            with mysql.connect() as cursor:
-                sql1 = """SELECT words.word, categories.category FROM words 
-                INNER JOIN categories ON words.category_id = categories.id
-                WHERE categories.category='{}'""".format(level_id)
-                # sql = "SELECT * FROM words WHERE level='{}'".format(level_id)
-                cursor.execute(sql1)
-                return cursor.fetchall()
-        except:
-            return {"status": "Level error"}
+# class WordsByLevel(Resource):
+#     def get(self, level_id):
+#         try:
+#             with mysql.connect() as cursor:
+#                 sql1 = """SELECT words.word, categories.category FROM words 
+#                 INNER JOIN categories ON words.category_id = categories.id
+#                 WHERE categories.category='{}'""".format(level_id)
+#                 # sql = "SELECT * FROM words WHERE level='{}'".format(level_id)
+#                 cursor.execute(sql1)
+#                 return cursor.fetchall()
+#         except:
+#             return {"status": "Level error"}
 
-class ExamplesByLevel(Resource):
-    def get(self, level_id):
-        try:
-            with mysql.connect() as cursor:
-                sql1 = """SELECT examples.example, categories.category FROM examples 
-                INNER JOIN categories ON examples.category_id = categories.id
-                WHERE categories.category='{}'""".format(level_id)
-                # sql = "SELECT * FROM words WHERE level='{}'".format(level_id)
-                cursor.execute(sql1)
-                return cursor.fetchall()
-        except:
-            return {"status": "Level error"}
+# class ExamplesByLevel(Resource):
+#     def get(self, level_id):
+#         try:
+#             with mysql.connect() as cursor:
+#                 sql1 = """SELECT examples.example, categories.category FROM examples 
+#                 INNER JOIN categories ON examples.category_id = categories.id
+#                 WHERE categories.category='{}'""".format(level_id)
+#                 # sql = "SELECT * FROM words WHERE level='{}'".format(level_id)
+#                 cursor.execute(sql1)
+#                 return cursor.fetchall()
+#         except:
+#             return {"status": "Level error"}
 
-class GrammarsByLevel(Resource):
-    def get(self, level_id):
-        try:
-            with mysql.connect() as cursor:
-                sql1 = """SELECT grammars.grammar, categories.category FROM grammars 
-                INNER JOIN categories ON grammars.category_id = categories.id
-                WHERE categories.category='{}'""".format(level_id)
-                # sql = "SELECT * FROM words WHERE level='{}'".format(level_id)
-                cursor.execute(sql1)
-                return cursor.fetchall()
-        except:
-            return {"status": "Level error"}
-class CategoryList(Resource):
-    def get(self):
-        try:
-            with mysql.connect() as cursor:
+# class GrammarsByLevel(Resource):
+#     def get(self, level_id):
+#         try:
+#             with mysql.connect() as cursor:
+#                 sql1 = """SELECT grammars.grammar, categories.category FROM grammars 
+#                 INNER JOIN categories ON grammars.category_id = categories.id
+#                 WHERE categories.category='{}'""".format(level_id)
+#                 # sql = "SELECT * FROM words WHERE level='{}'".format(level_id)
+#                 cursor.execute(sql1)
+#                 return cursor.fetchall()
+#         except:
+#             return {"status": "Level error"}
+
+# class CategoryList(Resource):
+    # def get(self):
+    #     try:
+    #         with mysql.connect() as cursor:
                 
-                sql = "SELECT * FROM categories"
-                cursor.execute(sql)
-                return cursor.fetchall()
-        except:
-            return {"status": "Level error"}
+    #             sql = "SELECT * FROM categories"
+    #             cursor.execute(sql)
+    #             return cursor.fetchall()
+    #     except:
+    #         return {"status": "Level error"}
 
 
 api.add_resource(WordsList, '/words')
 api.add_resource(ExampleList, '/examples')
 api.add_resource(GrammarList, '/grammars')
-api.add_resource(CategoryList, '/categories')
+# api.add_resource(CategoryList, '/categories')
 api.add_resource(Word, '/words/<string:word_id>')
-api.add_resource(Example, '/example/<string:example_id>')
-api.add_resource(Grammar, '/grammar/<string:grammar_id>')
+api.add_resource(Example, '/examples/<string:example_id>')
+api.add_resource(Grammar, '/grammars/<string:grammar_id>')
 api.add_resource(QuestionListByLevel, '/level/<string:level_id>')
 # api.add_resource(WordsByLevel, '/words/level/<string:level_id>')
 # api.add_resource(ExamplesByLevel, '/examples/level/<string:level_id>')
