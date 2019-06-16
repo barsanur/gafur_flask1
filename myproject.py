@@ -58,7 +58,7 @@ class NounByLevel(Resource):
 class Noun(Resource):
     def get(self, noun_id):
         with mysql.connect() as cursor:
-            sql = "SELECT * FROM noun WHERE id="+noun_id
+            sql = "SELECT * FROM noun WHERE id='{}'".format(noun_id)
             cursor.execute(sql)
             return cursor.fetchone()
     

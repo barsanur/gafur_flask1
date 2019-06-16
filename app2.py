@@ -4,7 +4,10 @@ from flaskext.mysql import MySQL
 from pymysql.cursors import DictCursor
 from flask_wtf.csrf import CSRFProtect
 from flask_cors import CORS
-
+import os
+import time
+from datetime import datetime
+import pipes
 
 app = Flask(__name__)
 
@@ -21,12 +24,77 @@ mysql = MySQL(cursorclass=DictCursor)
 # app.secret_key = os.urandom(24)
 
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'ocp32COsa6/'
+app.config['MYSQL_DATABASE_PASSWORD'] = '123'
 app.config['MYSQL_DATABASE_DB'] = 'gafur1'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
 
+# DB_HOST = 'localhost' 
+# DB_USER = 'root'
+# DB_USER_PASSWORD = 'ocp32COsa6/'
+# DB_NAME = 'gafur1'
+# BACKUP_PATH = '/home/noor/Folder/'
 
+
+
+
+# @app.route("/backup")
+# def get():
+#     try:
+#         os.stat(BACKUP_PATH)
+#     except:
+#         os.mkdir(BACKUP_PATH)
+#     now = datetime.now() # current date and time
+#     year = now.strftime("%Y")
+#     month = now.strftime("%m")
+#     day = now.strftime("%d")
+#     time = now.strftime("%H:%M:%S")
+#     date_time = now.strftime("%d_%m_%Y_%H:%M:%S")
+#     TODAYBACKUPPATH = BACKUP_PATH + '/' + date_time
+
+#     try:
+#         os.stat(TODAYBACKUPPATH)
+#     except:
+#         os.mkdir(TODAYBACKUPPATH)
+#     print ("checking for databases names file.")
+    
+#     if os.path.exists(DB_NAME):
+#         file1 = open(DB_NAME)
+#         multi = 1
+#         print ("Databases file found...")
+#         print ("Starting backup of all dbs listed in file " + DB_NAME)
+#     else:
+#         print ("Databases file not found...")
+#         print ("Starting backup of database " + DB_NAME)
+#         multi = 0
+    
+#     if multi:
+#         in_file = open(DB_NAME,"r")
+#         flength = len(in_file.readlines())
+#         in_file.close()
+#         p = 1
+#         dbfile = open(DB_NAME,"r")
+    
+#         while p <= flength:
+#             db = dbfile.readline()   # reading database name from file
+#             db = db[:-1]         # deletes extra line
+#             dumpcmd = "mysqldump -h " + DB_HOST + " -u " + DB_USER + " -p" + DB_USER_PASSWORD + " " + db + " > " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
+#             os.system(dumpcmd)
+#             gzipcmd = "gzip " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
+#             os.system(gzipcmd)
+#             p = p + 1
+#         dbfile.close()
+#     else:
+#         db = DB_NAME
+#         dumpcmd = "mysqldump -h " + DB_HOST + " -u " + DB_USER + " -p" + DB_USER_PASSWORD + " " + db + " > " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
+#         os.system(dumpcmd)
+#         gzipcmd = "gzip " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
+#         os.system(gzipcmd)
+#         t = ("Your backups have been created in '" + TODAYBACKUPPATH + "' directory")
+#         print(t)
+    
+    
+#     return redirect("http://germanfreak.com/questions")
             
 class NounsList(Resource):
     def get(self):
@@ -48,19 +116,12 @@ class NounsList(Resource):
         except:
             return {"status": "error"}
 
-class NounByLevel(Resource):
+class Noun(Resource):
     def get(self, noun_id):
         with mysql.connect() as cursor:
             sql = "SELECT * FROM noun WHERE category_id='{}' ORDER BY RAND() LIMIT 1".format(noun_id)
             cursor.execute(sql)
             return cursor.fetchall()[0]
-
-class Noun(Resource):
-    def get(self, noun_id):
-        with mysql.connect() as cursor:
-            sql = "SELECT * FROM noun WHERE id="+noun_id
-            cursor.execute(sql)
-            return cursor.fetchone()
     
     def delete(self,noun_id):
         try:
@@ -299,7 +360,6 @@ class CategoryList(Resource):
 
 # api.add_resource(Backup, '/backup')
 api.add_resource(NounsList, '/nouns')
-api.add_resource(NounByLevel, '/nouns/level/<string:noun_id>')
 api.add_resource(Noun, '/nouns/<string:noun_id>')
 api.add_resource(WordsList, '/words')
 api.add_resource(ExampleList, '/examples')

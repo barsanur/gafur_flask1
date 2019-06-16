@@ -1,10 +1,9 @@
-from flask import Flask, request, flash, redirect, url_for
+from flask import Flask, request
 from flask_restful import Resource, Api
 from flaskext.mysql import MySQL
 from pymysql.cursors import DictCursor
 from flask_wtf.csrf import CSRFProtect
 from flask_cors import CORS
-
 
 app = Flask(__name__)
 
@@ -18,71 +17,11 @@ api = Api(app, decorators=[csrf_protect.exempt])
 
 mysql = MySQL(cursorclass=DictCursor)
 
-# app.secret_key = os.urandom(24)
-
 app.config['MYSQL_DATABASE_USER'] = 'root'
 app.config['MYSQL_DATABASE_PASSWORD'] = 'ocp32COsa6/'
 app.config['MYSQL_DATABASE_DB'] = 'gafur1'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
-
-
-            
-class NounsList(Resource):
-    def get(self):
-        with mysql.connect() as cursor:
-            sql = "SELECT * FROM noun"
-            cursor.execute(sql)
-            return cursor.fetchall()
-    
-    def post(self):
-        word = request.json["word"]
-        answer = request.json["answer"]
-        category_id = request.json["category_id"]
-        try:
-            with mysql.connect() as cursor:
-                sql = "INSERT INTO noun (word,  answer, category_id) VALUES (%s, %s, %s)"
-                val = (word, answer, category_id)
-                cursor.execute(sql, val)
-                return {"status": "Ok"}
-        except:
-            return {"status": "error"}
-
-class NounByLevel(Resource):
-    def get(self, noun_id):
-        with mysql.connect() as cursor:
-            sql = "SELECT * FROM noun WHERE category_id='{}' ORDER BY RAND() LIMIT 1".format(noun_id)
-            cursor.execute(sql)
-            return cursor.fetchall()[0]
-
-class Noun(Resource):
-    def get(self, noun_id):
-        with mysql.connect() as cursor:
-            sql = "SELECT * FROM noun WHERE id="+noun_id
-            cursor.execute(sql)
-            return cursor.fetchone()
-    
-    def delete(self,noun_id):
-        try:
-            with mysql.connect() as cursor:
-                sql = "DELETE  FROM noun WHERE id=" + noun_id
-                cursor.execute(sql)
-                return {"data": "was deleted"}
-        except:
-                return {"status": "error"}
-
-    def put(self, noun_id):
-        word = request.json["word"]
-        answer = request.json["answer"]
-        category_id = request.json["category_id"]
-        
-        try:    
-            with mysql.connect() as cursor:
-                cursor.execute("""UPDATE noun SET word=%s, answer=%s, category_id=%s WHERE id=%s""",
-                (word, answer, category_id, noun_id))
-                return {"Data": "was Updated"}
-        except:
-            return {"status": "error"}
 
 class Word(Resource):
     def get(self, word_id):
@@ -282,8 +221,6 @@ class GrammarsByLevel(Resource):
         except:
             return {"status": "Level error"}
 
-
-
 class CategoryList(Resource):
     def get(self):
         try:
@@ -296,11 +233,6 @@ class CategoryList(Resource):
             return {"status": "Level error"}
 
 
-
-# api.add_resource(Backup, '/backup')
-api.add_resource(NounsList, '/nouns')
-api.add_resource(NounByLevel, '/nouns/level/<string:noun_id>')
-api.add_resource(Noun, '/nouns/<string:noun_id>')
 api.add_resource(WordsList, '/words')
 api.add_resource(ExampleList, '/examples')
 api.add_resource(GrammarList, '/grammars')
