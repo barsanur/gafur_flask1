@@ -4,6 +4,11 @@ from flaskext.mysql import MySQL
 from pymysql.cursors import DictCursor
 from flask_wtf.csrf import CSRFProtect
 from flask_cors import CORS
+import os
+import time
+from datetime import datetime
+import pipes
+import os.path
 
 
 app = Flask(__name__)
@@ -18,20 +23,86 @@ api = Api(app, decorators=[csrf_protect.exempt])
 
 mysql = MySQL(cursorclass=DictCursor)
 
-# app.secret_key = os.urandom(24)
+app.secret_key = os.urandom(24)
 
 app.config['MYSQL_DATABASE_USER'] = 'root'
 app.config['MYSQL_DATABASE_PASSWORD'] = 'ocp32COsa6/'
 app.config['MYSQL_DATABASE_DB'] = 'gafur1'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+
+homedir = os.path.expanduser("~")
+
+DB_HOST = 'localhost' 
+DB_USER = 'root'
+DB_USER_PASSWORD = 'ocp32COsa6/'
+DB_NAME = 'gafur1'
+BACKUP_PATH = homedir+'/Folder'
+
 mysql.init_app(app)
 
 
+class backupData(Resource):
+    def get(self):
+        try:
+            os.stat(BACKUP_PATH)
+        except:
+            os.mkdir(BACKUP_PATH)
+        now = datetime.now() # current date and time
+        year = now.strftime("%Y")
+        month = now.strftime("%m")
+        day = now.strftime("%d")
+        time = now.strftime("%H:%M:%S")
+        date_time = now.strftime("%d_%m_%Y_%H:%M:%S")
+        TODAYBACKUPPATH = BACKUP_PATH + '/' + date_time
+
+        try:
+            os.stat(TODAYBACKUPPATH)
+        except:
+            os.mkdir(TODAYBACKUPPATH)
+        print ("checking for databases names file.")
+        
+        if os.path.exists(DB_NAME):
+            file1 = open(DB_NAME)
+            multi = 1
+            print ("Databases file found...")
+            print ("Starting backup of all dbs listed in file " + DB_NAME)
+        else:
+            print ("Databases file not found...")
+            print ("Starting backup of database " + DB_NAME)
+            multi = 0
+        
+        if multi:
+            in_file = open(DB_NAME,"r")
+            flength = len(in_file.readlines())
+            in_file.close()
+            p = 1
+            dbfile = open(DB_NAME,"r")
+        
+            while p <= flength:
+                db = dbfile.readline()   # reading database name from file
+                db = db[:-1]         # deletes extra line
+                dumpcmd = "mysqldump -h " + DB_HOST + " -u " + DB_USER + " -p" + DB_USER_PASSWORD + " " + db + " > " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
+                os.system(dumpcmd)
+                gzipcmd = "gzip " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
+                os.system(gzipcmd)
+                p = p + 1
+            dbfile.close()
+        else:
+            db = DB_NAME
+            dumpcmd = "mysqldump -h " + DB_HOST + " -u " + DB_USER + " -p" + DB_USER_PASSWORD + " " + db + " > " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
+            os.system(dumpcmd)
+            gzipcmd = "gzip " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
+            os.system(gzipcmd)
+            # t = ("Your backups have been created in '" + TODAYBACKUPPATH + "' directory")
+            return "Your Folder have been created in '" + TODAYBACKUPPATH + "'." 
+        
+        
+        
             
 class NounsList(Resource):
     def get(self):
         with mysql.connect() as cursor:
-            sql = "SELECT * FROM noun"
+            sql = "SELECT * FROM noun ORDER BY id desc"
             cursor.execute(sql)
             return cursor.fetchall()
     
@@ -80,6 +151,62 @@ class Noun(Resource):
             with mysql.connect() as cursor:
                 cursor.execute("""UPDATE noun SET word=%s, answer=%s, category_id=%s WHERE id=%s""",
                 (word, answer, category_id, noun_id))
+                return {"Data": "was Updated"}
+        except:
+            return {"status": "error"}
+
+class VerbsList(Resource):
+    def get(self):
+        with mysql.connect() as cursor:
+            sql = "SELECT * FROM verb ORDER BY id desc"
+            cursor.execute(sql)
+            return cursor.fetchall()
+    
+    def post(self):
+        word = request.json["word"]
+        answer = request.json["answer"]
+        category_id = request.json["category_id"]
+        try:
+            with mysql.connect() as cursor:
+                sql = "INSERT INTO verb (word,  answer, category_id) VALUES (%s, %s, %s)"
+                val = (word, answer, category_id)
+                cursor.execute(sql, val)
+                return {"status": "Ok"}
+        except:
+            return {"status": "error"}
+
+class VerbByLevel(Resource):
+    def get(self, verb_id):
+        with mysql.connect() as cursor:
+            sql = "SELECT * FROM verb WHERE category_id='{}' ORDER BY RAND() LIMIT 1".format(verb_id)
+            cursor.execute(sql)
+            return cursor.fetchall()[0]
+
+class Verb(Resource):
+    def get(self, verb_id):
+        with mysql.connect() as cursor:
+            sql = "SELECT * FROM verb WHERE id="+verb_id
+            cursor.execute(sql)
+            return cursor.fetchone()
+    
+    def delete(self,verb_id):
+        try:
+            with mysql.connect() as cursor:
+                sql = "DELETE  FROM verb WHERE id=" + verb_id
+                cursor.execute(sql)
+                return {"data": "was deleted"}
+        except:
+                return {"status": "error"}
+
+    def put(self, verb_id):
+        word = request.json["word"]
+        answer = request.json["answer"]
+        category_id = request.json["category_id"]
+        
+        try:    
+            with mysql.connect() as cursor:
+                cursor.execute("""UPDATE verb SET word=%s, answer=%s, category_id=%s WHERE id=%s""",
+                (word, answer, category_id, verb_id))
                 return {"Data": "was Updated"}
         except:
             return {"status": "error"}
@@ -297,10 +424,13 @@ class CategoryList(Resource):
 
 
 
-# api.add_resource(Backup, '/backup')
+api.add_resource(backupData, '/backup')
 api.add_resource(NounsList, '/nouns')
 api.add_resource(NounByLevel, '/nouns/level/<string:noun_id>')
 api.add_resource(Noun, '/nouns/<string:noun_id>')
+api.add_resource(VerbsList, '/verbs')
+api.add_resource(VerbByLevel, '/verbs/level/<string:verb_id>')
+api.add_resource(Verb, '/verbs/<string:verb_id>')
 api.add_resource(WordsList, '/words')
 api.add_resource(ExampleList, '/examples')
 api.add_resource(GrammarList, '/grammars')
