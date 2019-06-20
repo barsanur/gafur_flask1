@@ -96,8 +96,118 @@ class backupData(Resource):
             # t = ("Your backups have been created in '" + TODAYBACKUPPATH + "' directory")
             return "Your Folder have been created in '" + TODAYBACKUPPATH + "'." 
         
+
+
+class TrennbareList(Resource):
+    def get(self):
+        with mysql.connect() as cursor:
+            sql = "SELECT * FROM trennbare ORDER BY id desc"
+            cursor.execute(sql)
+            return cursor.fetchall()
+    
+    def post(self):
+        word = request.json["word"]
+        answer = request.json["answer"]
+        category_id = request.json["category_id"]
+        try:
+            with mysql.connect() as cursor:
+                sql = "INSERT INTO trennbare (word,  answer, category_id) VALUES (%s, %s, %s)"
+                val = (word, answer, category_id)
+                cursor.execute(sql, val)
+                return {"status": "Ok"}
+        except:
+            return {"status": "error"}
+
+class TrennbareByLevel(Resource):
+    def get(self, trennbare_id):
+        with mysql.connect() as cursor:
+            sql = "SELECT * FROM trennbare WHERE category_id='{}' ORDER BY RAND() LIMIT 1".format(trennbare_id)
+            cursor.execute(sql)
+            return cursor.fetchall()[0]
+
+class Trennbare(Resource):
+    def get(self, trennbare_id):
+        with mysql.connect() as cursor:
+            sql = "SELECT * FROM trennbare WHERE id="+trennbare_id
+            cursor.execute(sql)
+            return cursor.fetchone()
+    
+    def delete(self,trennbare_id):
+        try:
+            with mysql.connect() as cursor:
+                sql = "DELETE  FROM trennbare WHERE id=" + trennbare_id
+                cursor.execute(sql)
+                return {"data": "was deleted"}
+        except:
+                return {"status": "error"}
+
+    def put(self, trennbare_id):
+        word = request.json["word"]
+        answer = request.json["answer"]
+        category_id = request.json["category_id"]
         
+        try:    
+            with mysql.connect() as cursor:
+                cursor.execute("""UPDATE trennbare SET word=%s, answer=%s, category_id=%s WHERE id=%s""",
+                (word, answer, category_id, trennbare_id))
+                return {"Data": "was Updated"}
+        except:
+            return {"status": "error"}        
+class PerfektList(Resource):
+    def get(self):
+        with mysql.connect() as cursor:
+            sql = "SELECT * FROM perfekt ORDER BY id desc"
+            cursor.execute(sql)
+            return cursor.fetchall()
+    
+    def post(self):
+        word = request.json["word"]
+        answer = request.json["answer"]
+        category_id = request.json["category_id"]
+        try:
+            with mysql.connect() as cursor:
+                sql = "INSERT INTO perfekt (word,  answer, category_id) VALUES (%s, %s, %s)"
+                val = (word, answer, category_id)
+                cursor.execute(sql, val)
+                return {"status": "Ok"}
+        except:
+            return {"status": "error"}
+
+class PerfektByLevel(Resource):
+    def get(self, perfekt_id):
+        with mysql.connect() as cursor:
+            sql = "SELECT * FROM perfekt WHERE category_id='{}' ORDER BY RAND() LIMIT 1".format(perfekt_id)
+            cursor.execute(sql)
+            return cursor.fetchall()[0]
+
+class Perfekt(Resource):
+    def get(self, perfekt_id):
+        with mysql.connect() as cursor:
+            sql = "SELECT * FROM perfekt WHERE id="+perfekt_id
+            cursor.execute(sql)
+            return cursor.fetchone()
+    
+    def delete(self,perfekt_id):
+        try:
+            with mysql.connect() as cursor:
+                sql = "DELETE  FROM perfekt WHERE id=" + perfekt_id
+                cursor.execute(sql)
+                return {"data": "was deleted"}
+        except:
+                return {"status": "error"}
+
+    def put(self, perfekt_id):
+        word = request.json["word"]
+        answer = request.json["answer"]
+        category_id = request.json["category_id"]
         
+        try:    
+            with mysql.connect() as cursor:
+                cursor.execute("""UPDATE perfekt SET word=%s, answer=%s, category_id=%s WHERE id=%s""",
+                (word, answer, category_id, perfekt_id))
+                return {"Data": "was Updated"}
+        except:
+            return {"status": "error"}       
             
 class NounsList(Resource):
     def get(self):
@@ -425,6 +535,12 @@ class CategoryList(Resource):
 
 
 api.add_resource(backupData, '/backup')
+api.add_resource(TrennbareList, '/trennbares')
+api.add_resource(TrennbareByLevel, '/trennbares/level/<string:trennbare_id>')
+api.add_resource(Trennbare, '/trennbares/<string:trennbare_id>')
+api.add_resource(PerfektList, '/perfekts')
+api.add_resource(PerfektByLevel, '/perfekts/level/<string:perfekt_id>')
+api.add_resource(Perfekt, '/perfekts/<string:perfekt_id>')
 api.add_resource(NounsList, '/nouns')
 api.add_resource(NounByLevel, '/nouns/level/<string:noun_id>')
 api.add_resource(Noun, '/nouns/<string:noun_id>')
