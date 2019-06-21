@@ -29,7 +29,6 @@ app.config['MYSQL_DATABASE_USER'] = 'root'
 app.config['MYSQL_DATABASE_PASSWORD'] = 'ocp32COsa6/'
 app.config['MYSQL_DATABASE_DB'] = 'gafur1'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
-
 homedir = os.path.expanduser("~")
 
 DB_HOST = 'localhost' 
@@ -37,7 +36,6 @@ DB_USER = 'root'
 DB_USER_PASSWORD = 'ocp32COsa6/'
 DB_NAME = 'gafur1'
 BACKUP_PATH = homedir+'/Folder'
-
 mysql.init_app(app)
 
 
@@ -81,18 +79,18 @@ class backupData(Resource):
             while p <= flength:
                 db = dbfile.readline()   # reading database name from file
                 db = db[:-1]         # deletes extra line
-                dumpcmd = "mysqldump -h " + DB_HOST + " -u " + DB_USER + " -p" + DB_USER_PASSWORD + " " + db + " > " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
+                dumpcmd = "mysqldump -h" + DB_HOST + " -u " + DB_USER + " -p" + DB_USER_PASSWORD + " " + db + " > " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
                 os.system(dumpcmd)
-                gzipcmd = "gzip " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
-                os.system(gzipcmd)
-                p = p + 1
+                #gzipcmd = "gzip " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
+                #os.system(gzipcmd)
+                #p = p + 1
             dbfile.close()
         else:
             db = DB_NAME
-            dumpcmd = "mysqldump -h " + DB_HOST + " -u " + DB_USER + " -p" + DB_USER_PASSWORD + " " + db + " > " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
+            dumpcmd = "mysqldump -h" + DB_HOST + " -u " + DB_USER + " -p" + DB_USER_PASSWORD + " " + db + " > " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
             os.system(dumpcmd)
-            gzipcmd = "gzip " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
-            os.system(gzipcmd)
+           # gzipcmd = "gzip " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
+            #os.system(gzipcmd)
             # t = ("Your backups have been created in '" + TODAYBACKUPPATH + "' directory")
             return "Your Folder have been created in '" + TODAYBACKUPPATH + "'." 
         
