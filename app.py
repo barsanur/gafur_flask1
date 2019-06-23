@@ -29,71 +29,8 @@ app.config['MYSQL_DATABASE_USER'] = 'root'
 app.config['MYSQL_DATABASE_PASSWORD'] = 'ocp32COsa6/'
 app.config['MYSQL_DATABASE_DB'] = 'gafur1'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
-homedir = os.path.expanduser("~")
-
-DB_HOST = 'localhost' 
-DB_USER = 'root'
-DB_USER_PASSWORD = 'ocp32COsa6/'
-DB_NAME = 'gafur1'
-BACKUP_PATH = homedir+'/Folder'
 mysql.init_app(app)
 
-
-class backupData(Resource):
-    def get(self):
-        try:
-            os.stat(BACKUP_PATH)
-        except:
-            os.mkdir(BACKUP_PATH)
-        now = datetime.now() # current date and time
-        year = now.strftime("%Y")
-        month = now.strftime("%m")
-        day = now.strftime("%d")
-        time = now.strftime("%H:%M:%S")
-        date_time = now.strftime("%d_%m_%Y_%H:%M:%S")
-        TODAYBACKUPPATH = BACKUP_PATH + '/' + date_time
-
-        try:
-            os.stat(TODAYBACKUPPATH)
-        except:
-            os.mkdir(TODAYBACKUPPATH)
-        print ("checking for databases names file.")
-        
-        if os.path.exists(DB_NAME):
-            file1 = open(DB_NAME)
-            multi = 1
-            print ("Databases file found...")
-            print ("Starting backup of all dbs listed in file " + DB_NAME)
-        else:
-            print ("Databases file not found...")
-            print ("Starting backup of database " + DB_NAME)
-            multi = 0
-        
-        if multi:
-            in_file = open(DB_NAME,"r")
-            flength = len(in_file.readlines())
-            in_file.close()
-            p = 1
-            dbfile = open(DB_NAME,"r")
-        
-            while p <= flength:
-                db = dbfile.readline()   # reading database name from file
-                db = db[:-1]         # deletes extra line
-                dumpcmd = "mysqldump -h" + DB_HOST + " -u " + DB_USER + " -p" + DB_USER_PASSWORD + " " + db + " > " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
-                os.system(dumpcmd)
-                #gzipcmd = "gzip " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
-                #os.system(gzipcmd)
-                #p = p + 1
-            dbfile.close()
-        else:
-            db = DB_NAME
-            dumpcmd = "mysqldump -h" + DB_HOST + " -u " + DB_USER + " -p" + DB_USER_PASSWORD + " " + db + " > " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
-            os.system(dumpcmd)
-           # gzipcmd = "gzip " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
-            #os.system(gzipcmd)
-            # t = ("Your backups have been created in '" + TODAYBACKUPPATH + "' directory")
-            return "Your Folder have been created in '" + TODAYBACKUPPATH + "'." 
-        
 
 
 class TrennbareList(Resource):
@@ -532,7 +469,6 @@ class CategoryList(Resource):
 
 
 
-api.add_resource(backupData, '/backup')
 api.add_resource(TrennbareList, '/trennbares')
 api.add_resource(TrennbareByLevel, '/trennbares/level/<string:trennbare_id>')
 api.add_resource(Trennbare, '/trennbares/<string:trennbare_id>')
